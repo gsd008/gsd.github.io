@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js.js"></script>
+    <script src="animate.js"></script>
+</head>
+<style>
+    body,html{
+        position: relative;
+    }
+
+    .sm{
+        width:130px;
+        height:30px;
+        background:#92CD18;
+        border-radius: 20px;
+        text-align: center;
+        position: absolute;
+        top: 50px;
+        right: 380px;
+        font-size: 20px;
+        z-index: 999;
+    }
+
+    .df{
+        width:130px;
+        height:30px;
+        background:#92CD18;
+        border-radius: 20px;
+        text-align: center;
+        position: absolute;
+        top: 100px;
+        right: 380px;
+        font-size: 20px;
+        z-index: 999;
+    }
+
+    .box{
+        width:1200px;
+        height:800px;
+        background-image: url("img/001.jpg");
+        background-repeat:no-repeat;
+        background-size: 100%;
+        margin-top: 280px;
+        margin: 0 auto;
+    }
+
+    .cu{
+        width:1155px;
+        height: 125px;
+        background-image: url("img/003.jpg");
+        background-repeat:no-repeat;
+        background-size: 100%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+    }
+
+
+</style>
+<body>
+   <div class="sm">生命指数:<span>0</span></div>
+   <div class="df">分数:<span>0</span></div>
+   <div class="box">
+       <div class="cu"></div>
+   </div>
+</body>
+</html>
+
+<script>
+
+    function DZyou(smobj,dfobj) {
+      this.box = $('.box');
+      this.length=5;
+      this.brr = [];
+      this.t = 0;
+      this.speed = 5;
+      this.sm = 10;
+      this.df = 0;
+      this.smobj = smobj;
+      this.dfobj = dfobj;
+    }
+
+    DZyou.prototype= {
+        play: function () {
+            this.getletter()
+            this.move();
+            this.keydown();
+        },
+
+        getletter: function () {
+            for (let i = 0; i < this.length; i++) {
+                this.getRandom();
+            }
+        },
+
+        getRandom: function () {
+            do {
+                var code = Math.round(Math.random() * 25) + 65;
+                var letter = String.fromCharCode(code);
+            } while (this.check(letter));
+
+            let img = document.createElement('img');
+            img.src = `img/${letter}.png`;
+            img.alt = letter;
+            img.style.cssText = `
+              position: absolute;
+
+              left:${Math.round(Math.random() * 1000 + 450)}px;
+              top:${Math.round(Math.random() * 50 + 20)}px;
+            `;
+            this.box.appendChild(img);
+            this.brr.push(img);
+        },
+
+        check: function (letter) {
+            return this.brr.some(function (dom) {
+                return dom.alt == letter;
+            });
+        },
+
+        move: function () {
+            var that = this;
+//            this.t=setInterval=()=>{
+//
+//            }
+            this.t = setInterval(function () {
+                for (var i = 0; i < that.brr.length; i++) {
+                    var newtop = that.brr[i].offsetTop;
+                    var top = newtop + that.speed;
+                    that.brr[i].style.top = top + 'px';
+                    if (top > 600) {
+                        that.sm--;
+                        that.smobj.innerHTML=that.sm;
+                        if (that.sm <= 0) {
+                            alert('游戏结束');
+                            clearInterval(that.t);
+                            return;
+                        }
+                        that.smobj.innerHTML = `生命指数:${that.sm}`;
+                        that.box.removeChild(that.brr[i]);
+                        that.brr.splice(i, 1);
+                        that.getRandom();
+                    }
+                }
+            }, 100)
+        },
+
+        keydown:function () {
+            let that = this;
+            document.onkeydown=function (e) {
+                var code = e.keyCode;
+                var letter = String.fromCharCode(code);
+                for(let i=0; i<that.length; i++){
+                    var index = that.brr.findIndex(function (value) {
+                        return value.alt==letter;
+                    });
+                }
+                  if(index!=-1){
+                        that.box.removeChild(that.brr[index]);
+                        that.brr.splice(index,1);
+                        that.getRandom();
+                        that.df++;
+                        that.dfobj.innerHTML=`分数:${that.df}`;
+                        if(that.df==6){
+                           let value=confirm("欢迎进入下一关");
+                           if (value){
+                               that.next();
+                           }else {
+                               window.close();
+                           }
+                        }
+
+                  }
+
+            }
+        },
+
+        next:function () {
+            let that = this;
+            that.brr.forEach(function (value) {
+                that.box.removeChild(value);
+            });
+            that.brr=[];
+            that.length+=1;
+            that.sm+=2;
+            that.df=0;
+            clearInterval(that.t);
+            that.speed+=1;
+
+            that.play();
+
+        }
+
+
+    }
+
+    let smobj = document.querySelector('div.sm');
+    let dfobj = document.querySelector('div.df');
+    console.log(dfobj)
+    let obj = new DZyou(smobj,dfobj);
+    obj.play();
+
+
+</script>

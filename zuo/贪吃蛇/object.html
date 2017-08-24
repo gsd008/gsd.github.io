@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="js.js"></script>
+</head>
+<style>
+    .box{
+        width: 600px;
+        height:600px;
+        box-shadow: 0 0 10px #000;
+        margin: 0 auto;
+    }
+    .box div{
+        width:30px;
+        height:30px;
+        border: 1px solid #000;
+        float: left;
+        box-sizing: border-box;
+    }
+    .food{
+        width: 30px;
+        height: 30px;
+        background-color: red;
+        border-radius: 50%;
+    }
+    .snaker{
+        width:30px;
+        height:30px;
+        background-color: #0dcccc;
+    }
+    .fenshu{
+        width: 80px;
+        height:30px;
+        text-align: center;
+        line-height: 30px;
+        color: red;
+        font-size: 20px;
+        box-shadow: 0 0 10px #df2521;
+        position: fixed;
+        left: 100px;
+        top:100px;
+    }
+</style>
+<body>
+<div class="box">
+</div>
+<div class="fenshu"></div>
+</body>
+</html>
+<script>
+    var box=document.querySelector(".box")
+    function Game () {
+        this.arr=[{x:0,y:0},{x:1,y:0},{x:2,y:0}];
+        this.newheadx;
+        this.newheady;
+        this.way="right";
+        this.food;
+        this.t=null;
+    }
+    Game.prototype={
+        paly:function () {
+            this.buildScene();
+            this.snake();
+            this.getfood();
+            let that=this;
+            this.t=setInterval(function(){that.move()},200);
+
+        },
+//        创建场景
+        buildScene:function () {
+            for(var i=0;i<20;i++){
+                for(var j=0;j<20;j++){
+                    var div=document.createElement('div');
+                    div.id='r'+j+'-'+i;
+                    box.appendChild(div);
+                };
+            };
+        },
+//        画蛇
+        snake:function () {
+            this.arr.forEach(function (value) {
+                var obj=document.querySelector('#r'+value.x+'-'+value.y);
+                obj.className='snaker';
+            })
+        },
+//        获取食物
+        getfood:function () {
+            var that=this;
+            do{
+                var x=Math.floor(Math.random()*20);
+                var y=Math.floor(Math.random()*20);
+            }while(this.check(x,y))
+            var foods=document.getElementById("r"+x+'-'+y);
+            foods.className='food';
+            return  that.obj={x:x,y:y};
+            console.log(that.obj)
+        },
+
+//        判断食物是否在蛇身上
+        check:function (m,n) {
+            var result=this.arr.some(function (value) {
+                return value.x==m&&value.y==n;
+            });
+            return result;
+        },
+//        移动蛇
+        move:function () {
+//            let that=this;
+            this.oldhead=this.arr[this.arr.length-1];
+            switch (this.way){
+                case "right":
+                    this.newheadx=this.oldhead.x+1;
+                    this.newheady=this.oldhead.y;
+                    break;
+                case "left":
+                    this.newheadx=this.oldhead.x-1;
+                    this.newheady=this.oldhead.y;
+                    break;
+                case "top":
+                    this.newheadx=this.oldhead.x;
+                    this.newheady=this.oldhead.y-1;
+                    break;
+                case "bottom":
+                    this.newheadx=this.oldhead.x;
+                    this.newheady=this.oldhead.y+1;
+                    break;
+            };
+            if(this.newheadx<0||this.newheady>19||this.newheady<0||this.newheadx>19||this.check(this.newheadx,this.newheady)){
+                alert("game over");
+                clearInterval(this.t);
+                return;
+            }
+            this.newhead=$('#r'+this.newheadx+"-"+this.newheady);
+            this.newhead.className="snaker";
+            this.arr.push({x:this.newheadx,y:this.newheady});
+//            var that=this;
+            let that=this;
+            if(that.newheadx == that.obj.x&&that.newheady == that.obj.y){
+                this.getfood();
+            }else{
+                this.endobj=$("#r"+this.arr[0].x+"-"+this.arr[0].y);
+                this.endobj.classList.remove("snaker");
+                this.arr.shift();
+            };
+
+            document.onkeydown=function (e) {
+                var evn=e.keyCode;
+                if (evn == '37') {
+                    if (that.way == 'right') {
+                        return;
+                    }
+                    that.way = 'left';
+                } else if (evn == '38') {
+                    if (that.way == 'bottom') {
+                        return;
+                    }
+                    that.way = 'top';
+                } else if (evn == '39') {
+                    if (that.way == 'left') {
+                        return;
+                    }
+                    that.way = 'right';
+                } else if (evn == '40') {
+                    if (that.way == 'top') {
+                        return;
+                    }
+                    that.way = 'bottom';
+                };
+
+            };
+
+        },
+    };
+    let snake=new Game();
+    snake.paly();
+</script>
